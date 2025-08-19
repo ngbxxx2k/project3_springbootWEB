@@ -29,15 +29,18 @@ public class CustomerEntity extends BaseEntity {
     @OneToMany(mappedBy = "customer",fetch = FetchType.LAZY)
     private List<TransactionEntity> transactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "customer",fetch = FetchType.LAZY)
-    private List<AssignmentCustomerEntity> assignmentCustomers = new ArrayList<>();
+//    @OneToMany(mappedBy = "customer",fetch = FetchType.LAZY)
+//    private List<AssignmentCustomerEntity> assignmentCustomers = new ArrayList<>();
 
-    public List<AssignmentCustomerEntity> getAssignmentCustomers() {
-        return assignmentCustomers;
+    @ManyToMany(mappedBy = "customers", fetch = FetchType.LAZY)
+    private List<UserEntity> staffs = new ArrayList<>();
+
+    public List<UserEntity> getStaffs() {
+        return staffs;
     }
 
-    public void setAssignmentCustomers(List<AssignmentCustomerEntity> assignmentCustomers) {
-        this.assignmentCustomers = assignmentCustomers;
+    public void setStaffs(List<UserEntity> staffs) {
+        this.staffs = staffs;
     }
 
     public List<TransactionEntity> getTransactions() {

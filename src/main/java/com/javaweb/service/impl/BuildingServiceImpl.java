@@ -1,7 +1,7 @@
 package com.javaweb.service.impl;
 
 import com.javaweb.converter.BuildingDTOConverter;
-import com.javaweb.entity.AssignmentBuildingEntity;
+//import com.javaweb.entity.AssignmentBuildingEntity;
 import com.javaweb.entity.BuildingEntity;
 import com.javaweb.entity.RentAreaEntity;
 import com.javaweb.entity.UserEntity;
@@ -13,7 +13,7 @@ import com.javaweb.model.request.BuildingUpdateAssignmetRequest;
 import com.javaweb.model.response.BuildingSearchResponse;
 import com.javaweb.model.response.ResponseDTO;
 import com.javaweb.model.response.StaffResponseDTO;
-import com.javaweb.repository.AssignmentBuildingRepository;
+//import com.javaweb.repository.AssignmentBuildingRepository;
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.RentAreaRepository;
 import com.javaweb.repository.UserRepository;
@@ -21,6 +21,7 @@ import com.javaweb.repository.custom.BuildingRepositoryCustom;
 import com.javaweb.repository.custom.RentareaRepositoryCustom;
 import com.javaweb.service.IBuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -40,7 +41,9 @@ public class BuildingServiceImpl implements IBuildingService {
     @Autowired
     private RentAreaRepository rentAreaRepository;
     @Autowired
-    private AssignmentBuildingRepository assignmentBuildingRepository;
+    private UserRepository UserRepository;
+//    @Autowired
+//    private AssignmentBuildingRepository assignmentBuildingRepository;
     @Autowired
     private UserRepository userRepository;
 
@@ -136,16 +139,16 @@ public class BuildingServiceImpl implements IBuildingService {
                 //xoá phần arentarea
                 rentAreaRepository.deleteAllByBuildingEntityIdIn(ids);
                 // xoá phần assdignmenbuilding
-                assignmentBuildingRepository.deleteAllByBuildingIdIn(ids);
+                List<BuildingEntity> buildingEntity = buildingRepository.findAllById(ids);
+                for (BuildingEntity item : buildingEntity) {
+                    item.setStaffs(new ArrayList<>());
+                    buildingRepository.save(item);
+                }
                 // muốn toi uu hon thi tự tu tao ham query
                 for(Long id : ids) {
                     buildingRepository.deleteById(id);
                 }
             }
-
-
-
-
     }
 
     @Override
@@ -161,54 +164,36 @@ public class BuildingServiceImpl implements IBuildingService {
 
     @Override
     public List<StaffResponseDTO> GetListStaffAssignment(Long id) {
-        List<UserEntity> listStaff = userRepository.findByStatusAndRoles_Code(1,"STAFF");
-        List<AssignmentBuildingEntity> listStaffAssignment = assignmentBuildingRepository.findByBuildingIdIn(id);
-        ResponseDTO responseDTO = new ResponseDTO();
-        // dùng hashset nhanh hơn array
-        Set<Long> staffIdAssignment = new HashSet<>();
-        List<StaffResponseDTO> staffResponseDTO = new ArrayList<>();
-        for(AssignmentBuildingEntity  item : listStaffAssignment) {
-            Long idStaff = item.getUser().getId();
-            staffIdAssignment.add(idStaff);
-        }
-        for(UserEntity item : listStaff) {
-            StaffResponseDTO staffResponseDTOS = new StaffResponseDTO();
-            if(staffIdAssignment.contains(item.getId())) {
-                staffResponseDTOS.setStaffId(item.getId());
-                staffResponseDTOS.setFullName(item.getFullName());
-                staffResponseDTOS.setChecked("checked");
-            }else{
-                staffResponseDTOS.setStaffId(item.getId());
-                staffResponseDTOS.setFullName(item.getFullName());
-                staffResponseDTOS.setChecked("");
-            }
-            staffResponseDTO.add(staffResponseDTOS);
-        }
+        BuildingEntity buildingEntity = buildingRepository.findById(id).orElse(null);
+        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1,"STAFF");
+        List<UserEntity> staffassignmet = buildingEntity.getStaffs();
+        List<StaffResponseDTO> responses = new ArrayList<>();
+        for (UserEntity staff : staffs) {
+            StaffResponseDTO staffResponseDTO = new StaffResponseDTO();
+            if(staffassignmet.contains(staff)) {
 
-        return staffResponseDTO;
+                staffResponseDTO.setFullName(staff.getFullName());
+                staffResponseDTO.setStaffId(staff.getId());
+                staffResponseDTO.setChecked("checked");
+                responses.add(staffResponseDTO);
+            }else{
+                staffResponseDTO.setFullName(staff.getFullName());
+                staffResponseDTO.setStaffId(staff.getId());
+                staffResponseDTO.setChecked("");
+                responses.add(staffResponseDTO);
+            }
+        }
+        return responses;
     }
 
     @Override
     @Transactional
     public void UpdateStaffAssignmentBuilding(BuildingUpdateAssignmetRequest buildingUpdateAssignmetRequest) {
-        if(buildingUpdateAssignmetRequest.getBuildingId() != null) {
-            // xoá hết tất cả bảng ghi cũ
-            assignmentBuildingRepository.deleteAllByBuildingIdIn(buildingUpdateAssignmetRequest.getBuildingId());
-            // lấy ra List staff cần thêm
-            List<UserEntity> staff = userRepository.findByIdIn(buildingUpdateAssignmetRequest.getStaffIds());
-            // lấy ra building
-            BuildingEntity buildingEntity = buildingRepository.findById(buildingUpdateAssignmetRequest.getBuildingId()).orElse(null);
-            //cập nhật từng staffId
-            List<AssignmentBuildingEntity> assignmentBuildingEntity = new ArrayList<>();
-            for(UserEntity item : staff) {
-                AssignmentBuildingEntity assignmentBuilding = new AssignmentBuildingEntity();
-                assignmentBuilding.setUser(item);
-                assignmentBuilding.setBuilding(buildingEntity);
-                assignmentBuildingEntity.add(assignmentBuilding);
-            }
-            assignmentBuildingRepository.saveAll(assignmentBuildingEntity);
-        }
-
+        BuildingEntity buildingEntity = buildingRepository.findById(buildingUpdateAssignmetRequest.getBuildingId())
+                .orElseThrow(() -> new RuntimeException("Building not found"));
+        List<UserEntity> staffs = userRepository.findByIdIn(buildingUpdateAssignmetRequest.getStaffIds());
+        buildingEntity.setStaffs(staffs);
+        buildingRepository.save(buildingEntity);
     }
 
     private void validateBuildingRequest(BuildingAddOrUpdateRequest request) {

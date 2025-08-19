@@ -35,31 +35,35 @@ public class UserEntity extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false))
     private List<RoleEntity> roles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "staff")
-    private List<AssignmentCustomerEntity> assignmentCustomers = new ArrayList<>();
+//    @OneToMany(mappedBy = "staff")
+//    private List<AssignmentCustomerEntity> assignmentCustomers = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "assignmentcustomer",
+            joinColumns = @JoinColumn(name = "staffid", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "customerid", nullable = false))
+    private List<CustomerEntity> customers = new ArrayList<>();
 
-    @OneToMany(mappedBy="user", fetch = FetchType.LAZY)
-    private List<AssignmentBuildingEntity> assignmentBuildingEntities = new ArrayList<>();
+    @ManyToMany(mappedBy ="staffs",fetch = FetchType.LAZY)
+    private List<BuildingEntity> buildings = new ArrayList<>();
 
-//    @OneToMany(mappedBy="users", fetch = FetchType.LAZY)
-//    private List<UserRoleEntity> userRoleEntities = new ArrayList<>();
-
-
-    public List<AssignmentCustomerEntity> getAssignmentCustomers() {
-        return assignmentCustomers;
+    public List<BuildingEntity> getBuildings() {
+        return buildings;
     }
 
-    public void setAssignmentCustomers(List<AssignmentCustomerEntity> assignmentCustomers) {
-        this.assignmentCustomers = assignmentCustomers;
+    public void setBuildings(List<BuildingEntity> buildings) {
+        this.buildings = buildings;
     }
 
-    public List<AssignmentBuildingEntity> getAssignmentBuildingEntities() {
-        return assignmentBuildingEntities;
+    public List<CustomerEntity> getCustomers() {
+        return customers;
     }
 
-    public void setAssignmentBuildingEntities(List<AssignmentBuildingEntity> assignmentBuildingEntities) {
-        this.assignmentBuildingEntities = assignmentBuildingEntities;
+    public void setCustomers(List<CustomerEntity> customers) {
+        this.customers = customers;
     }
+
+
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
