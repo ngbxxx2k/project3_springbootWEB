@@ -2,25 +2,36 @@ package com.javaweb.model.request;
 
 import com.javaweb.model.dto.AbstractDTO;
 
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 public class BuildingSearchRequest extends AbstractDTO {
+    @Pattern(regexp = "^[a-zA-Z\\sÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠ-ỹ]+$", message = "Tên chỉ được chứa chữ cái, số và khoảng trắng (hỗ trợ tiếng Việt)")
     private String name;
+    @PositiveOrZero(message = "Số lượng phải là số dương hoặc 0")
     private Long floorArea;
+    @Pattern(regexp = "^-?[a-zA-Z0-9_]+$", message = "Giá trị district không hợp lệ")
     private String district;
+    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-_]+$", message = "Tên Phường không hợp lệ")
     private String ward;
+    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-_]+$", message = "Tên đường không hợp lệ")
     private String street;
     private Long numberOfBasement;
+    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-_]+$", message = "Giá trị Hướng không hợp lệ")
     private String direction;
     private Long level;
     private Long areaFrom;
     private Long areaTo;
     private Long rentPriceFrom;
     private Long rentPriceTo;
+    @Pattern(regexp = "^[a-zA-Z\\sÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠ-ỹ]+$", message = "Tên chỉ được chứa chữ cái, số và khoảng trắng (hỗ trợ tiếng Việt)")
     private String managerName;
+    @Pattern(regexp = "^-?[0-9]+$", message = "Giá trị phải là một số nguyên hợp lệ")
     private String managerPhone;
     private Long staffId;
-    private List<String> typeCode;
+
+    private List<String> type;
 
 
     public String getName() {
@@ -47,12 +58,12 @@ public class BuildingSearchRequest extends AbstractDTO {
         this.numberOfBasement = numberOfBasement;
     }
 
-    public List<String> getTypeCode() {
-        return typeCode;
+    public List<String> getType() {
+        return type;
     }
 
-    public void setTypeCode(List<String> typeCode) {
-        this.typeCode = typeCode;
+    public void setType(List<String> type) {
+        this.type = type;
     }
 
     public String getStreet() {

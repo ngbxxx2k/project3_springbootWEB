@@ -4,7 +4,7 @@ public class StaffResponseDTO {
 
     private String fullName;
     private Long staffId;
-    private String checked;
+    private String checked; // "checked"
 
     public String getFullName() {
         return fullName;
